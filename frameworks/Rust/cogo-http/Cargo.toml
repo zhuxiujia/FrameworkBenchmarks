@@ -1,8 +1,9 @@
 [package]
-name = "cogo-minihttp"
+name = "cogo-http"
 version = "0.1.0"
 authors = ["zhuxiujia <zhuxiujia@qq.com>"]
 edition = "2018"
+
 
 [dependencies]
 cogo = "0.1"
@@ -17,4 +18,5 @@ cdbc-pg = {version = "0.1"}
 
 [profile.release]
 lto = true
+opt-level = 3
 codegen-units = 1

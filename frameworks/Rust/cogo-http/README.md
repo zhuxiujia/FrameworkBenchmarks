@@ -1,4 +1,4 @@
-# [cogo-minihttp](https://github.com/co-rs/cogo) web framework
+# [cogo](https://github.com/co-rs/cogo) web framework
 
 ## Description
 

@@ -1,5 +1,5 @@
 {
-  "framework": "cogo-minihttp",
+  "framework": "cogo-http",
   "tests": [
     {
       "default": {
