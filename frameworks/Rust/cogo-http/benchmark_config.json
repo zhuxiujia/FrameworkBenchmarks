@@ -13,14 +13,14 @@
         "approach": "Realistic",
         "classification": "Micro",
         "database": "Postgres",
-        "framework": "cogo-minihttp",
+        "framework": "cogo-http",
         "language": "Rust",
         "orm": "raw",
         "platform": "Rust",
-        "webserver": "cogo-minihttp",
+        "webserver": "cogo-http",
         "os": "Linux",
         "database_os": "Linux",
-        "display_name": "cogo-minihttp"
+        "display_name": "cogo-http"
       }
     }
   ]
