@@ -7,7 +7,7 @@ use std::io;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use cdbc::PoolConnection;
-use cdbc_pg::{PgConnection, PgPool, Postgres};
+use cdbc_pg::{PgConnection, PgPool, PgPoolOptions, Postgres};
 
 use cogo::std::http::server::{HttpService, HttpServiceFactory, Request, Response};
 
@@ -41,7 +41,10 @@ struct PgConnectionPool {
 
 impl PgConnectionPool {
     fn new(db_url: &str, size: usize) -> PgConnectionPool {
-        let pool=Arc::new(PgPool::connect(db_url).unwrap());
+        let mut opt =PgPoolOptions::new();
+        opt.max_connections = size as u32;
+        opt.min_connections = size as u32;
+        let pool=Arc::new(opt.connect(db_url).unwrap());
 
         let mut clients = Vec::with_capacity(size);
         for _ in 0..size {
