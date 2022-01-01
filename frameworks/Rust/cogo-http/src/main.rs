@@ -1,12 +1,17 @@
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
+
+#[macro_use]
+extern crate cdbc;
+
 use std::borrow::Cow;
 use std::fmt::Write;
 use std::io;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
-use cdbc::PoolConnection;
+use std::time::Duration;
+use cdbc::{Executor, PoolConnection};
 use cdbc_pg::{PgConnection, PgPool, PgPoolOptions, Postgres};
 
 use cogo::std::http::server::{HttpService, HttpServiceFactory, Request, Response};
@@ -66,10 +71,39 @@ impl PgConnectionPool {
 
 
 
+
 struct Techempower {
-    db: Arc<PoolConnection<Postgres>>,
+    //db: Arc<PoolConnection<Postgres>>,
     rng: Rand32,
 }
+
+
+fn get_world(conn: &mut PoolConnection<Postgres>, random_id: i32) -> Result<WorldRow, cdbc::Error> {
+    let mut q=cdbc::query::query("SELECT * FROM world WHERE id=$1")
+        .bind(random_id);
+    let all=conn.fetch_one(q)?;
+    let row=cdbc::row_scan!(all,WorldRow{ id: 0, randomnumber: 0 })?;
+    Ok(row)
+}
+
+fn get_worlds(
+    conn: &mut PoolConnection<Postgres>,
+    num: usize,
+    rand: &mut Rand32,
+) -> Result<Vec<WorldRow>, cdbc::Error> {
+    let mut queries = vec![];
+    for _ in 0..num {
+        let random_id = (rand.rand_u32() % 10_000 + 1) as i32;
+        let row=get_world(conn,random_id)?;
+        queries.push(row);
+    }
+    Ok(queries)
+}
+
+
+
+
+
 
 impl HttpService for Techempower {
     fn call(&mut self, req: Request, rsp: &mut Response) -> io::Result<()> {
@@ -87,6 +121,17 @@ impl HttpService for Techempower {
             }
             "/db" => {
                 rsp.header("Content-Type: application/json");
+
+                let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
+                let world = {cogo::coroutine::sleep(Duration::from_millis(2));
+                 WorldRow{
+                    id: random_id,
+                    randomnumber: random_id
+                 }
+                };
+                world.to_bytes_mut(rsp.body_mut())
+
+
                 // rsp.header("Content-Type: application/json");
                 // let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
                 // let world = self.db.get_world(random_id).unwrap();
@@ -94,6 +139,21 @@ impl HttpService for Techempower {
             }
             "/fortunes" => {
                 rsp.header("Content-Type: text/html; charset=utf-8");
+                let fortunes = {
+                    let mut v=vec![];
+                    cogo::coroutine::sleep(Duration::from_millis(2));
+                    let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
+                    v.push(Fortune{
+                        id: random_id,
+                        message: Cow::Owned("ff".parse().unwrap())
+                    });
+                    v
+                };
+                let mut body = Vec::with_capacity(2048);
+                ywrite_html!(body, "{{> fortune }}");
+                rsp.body_vec(body);
+
+
                 // let fortunes = self.db.tell_fortune().unwrap();
                 // let mut body = Vec::with_capacity(2048);
                 // ywrite_html!(body, "{{> fortune }}");
@@ -101,12 +161,38 @@ impl HttpService for Techempower {
             }
             p if p.starts_with("/queries") => {
                 rsp.header("Content-Type: application/json");
+
+                let worlds = {
+                    let mut vec:SmallVec<[WorldRow;1]> =SmallVec::new();
+                    cogo::coroutine::sleep(Duration::from_millis(2));
+                    let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
+                    vec.push(WorldRow{
+                        id: random_id,
+                        randomnumber: random_id
+                    });
+                    vec
+                };
+                worlds.to_bytes_mut(rsp.body_mut());
+
                 // let q = utils::get_query_param(p) as usize;
                 // let worlds = self.db.get_worlds(q, &mut self.rng).unwrap();
                 // worlds.to_bytes_mut(rsp.body_mut());
             }
             p if p.starts_with("/updates") => {
                 rsp.header("Content-Type: application/json");
+                let worlds = {
+                    let mut vec:SmallVec<[WorldRow;1]> =SmallVec::new();
+                    cogo::coroutine::sleep(Duration::from_millis(2));
+                    let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
+                    vec.push(WorldRow{
+                        id: random_id,
+                        randomnumber: random_id
+                    });
+                    vec
+                };
+                worlds.to_bytes_mut(rsp.body_mut());
+
+
                 // let q = utils::get_query_param(p) as usize;
                 // let worlds = self.db.updates(q, &mut self.rng).unwrap();
                 // worlds.to_bytes_mut(rsp.body_mut());
@@ -121,16 +207,17 @@ impl HttpService for Techempower {
 }
 
 struct HttpServer {
-    db_pool: PgConnectionPool,
+   // db_pool: PgConnectionPool,
 }
 
 impl HttpServiceFactory for HttpServer {
     type Service = Techempower;
 
     fn new_service(&self) -> Self::Service {
-        let (db, idx) = self.db_pool.get_connection();
+        let idx = 0;
+        //let (db, idx) = self.db_pool.get_connection();
         let rng = Rand32::new(idx as u64);
-        Techempower { db, rng }
+        Techempower {  rng }
     }
 }
 
@@ -140,10 +227,10 @@ fn main() {
         .set_stack_size(0x1000);
     println!("Starting http server: 127.0.0.1:8080");
     let server = HttpServer {
-        db_pool: PgConnectionPool::new(
-            "postgres://benchmarkdbuser:benchmarkdbpass@tfb-database/hello_world",
-            num_cpus::get(),
-        ),
+        // db_pool: PgConnectionPool::new(
+        //     "postgres://benchmarkdbuser:benchmarkdbpass@tfb-database/hello_world",
+        //     num_cpus::get(),
+        // ),
     };
     server.start("0.0.0.0:8080").unwrap().join().unwrap();
 }

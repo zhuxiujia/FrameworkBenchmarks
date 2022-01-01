@@ -6,7 +6,7 @@ edition = "2018"
 
 
 [dependencies]
-cogo = "0.1"
+cogo = "0.1.6"
 mimalloc = "0.1"
 num_cpus = "1.0"
 oorandom = "11"
