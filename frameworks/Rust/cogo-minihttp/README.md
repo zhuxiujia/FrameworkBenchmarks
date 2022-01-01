@@ -1,8 +1,8 @@
-# [may-minihttp](https://github.com/Xudong-Huang/may_minihttp) web framework
+# [cogo-minihttp](https://github.com/co-rs/cogo) web framework
 
 ## Description
 
-may-minihttp is a small, fast micro http framework based on [May](https://github.com/Xudong-Huang/may)
+cogo coroutine for rust [cogo](https://github.com/co-rs/cogo)
 
 ## Database
 
