@@ -1,0 +1,20 @@
+[package]
+name = "cogo-minihttp"
+version = "0.1.0"
+authors = ["zhuxiujia <zhuxiujia@qq.com>"]
+edition = "2018"
+
+[dependencies]
+cogo = "0.1"
+mimalloc = "0.1"
+num_cpus = "1.0"
+oorandom = "11"
+smallvec = "1.1"
+yarte = { version = "0.15", features = ["bytes-buf", "json"] }
+#must dep
+cdbc = {version = "0.1"}
+cdbc-pg = {version = "0.1"}
+
+[profile.release]
+lto = true
+codegen-units = 1
