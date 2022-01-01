@@ -34,7 +34,6 @@ pub struct Fortune {
 }
 
 struct PgConnectionPool {
-    pool: Arc<PgPool>,
     idx: AtomicUsize,
     clients: Vec<Arc<PoolConnection<Postgres>>>,
 }
@@ -53,7 +52,6 @@ impl PgConnectionPool {
         }
 
         PgConnectionPool {
-            pool:pool,
             idx: AtomicUsize::new(0),
             clients,
         }
@@ -87,31 +85,32 @@ impl HttpService for Techempower {
             "/plaintext" => {
                 rsp.header("Content-Type: text/plain").body("Hello, World!");
             }
-            // "/db" => {
-            //     rsp.header("Content-Type: application/json");
-            //     let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
-            //     let world = self.db.get_world(random_id).unwrap();
-            //     world.to_bytes_mut(rsp.body_mut())
-            // }
-            // "/fortunes" => {
-            //     rsp.header("Content-Type: text/html; charset=utf-8");
-            //     let fortunes = self.db.tell_fortune().unwrap();
-            //     let mut body = Vec::with_capacity(2048);
-            //     ywrite_html!(body, "{{> fortune }}");
-            //     rsp.body_vec(body);
-            // }
-            // p if p.starts_with("/queries") => {
-            //     rsp.header("Content-Type: application/json");
-            //     let q = utils::get_query_param(p) as usize;
-            //     let worlds = self.db.get_worlds(q, &mut self.rng).unwrap();
-            //     worlds.to_bytes_mut(rsp.body_mut());
-            // }
-            // p if p.starts_with("/updates") => {
-            //     rsp.header("Content-Type: application/json");
-            //     let q = utils::get_query_param(p) as usize;
-            //     let worlds = self.db.updates(q, &mut self.rng).unwrap();
-            //     worlds.to_bytes_mut(rsp.body_mut());
-            // }
+            "/db" => {
+                rsp.header("Content-Type: application/json");
+                // rsp.header("Content-Type: application/json");
+                // let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
+                // let world = self.db.get_world(random_id).unwrap();
+                // world.to_bytes_mut(rsp.body_mut())
+            }
+            "/fortunes" => {
+                rsp.header("Content-Type: text/html; charset=utf-8");
+                // let fortunes = self.db.tell_fortune().unwrap();
+                // let mut body = Vec::with_capacity(2048);
+                // ywrite_html!(body, "{{> fortune }}");
+                // rsp.body_vec(body);
+            }
+            p if p.starts_with("/queries") => {
+                rsp.header("Content-Type: application/json");
+                // let q = utils::get_query_param(p) as usize;
+                // let worlds = self.db.get_worlds(q, &mut self.rng).unwrap();
+                // worlds.to_bytes_mut(rsp.body_mut());
+            }
+            p if p.starts_with("/updates") => {
+                rsp.header("Content-Type: application/json");
+                // let q = utils::get_query_param(p) as usize;
+                // let worlds = self.db.updates(q, &mut self.rng).unwrap();
+                // worlds.to_bytes_mut(rsp.body_mut());
+            }
             _ => {
                 rsp.status_code("404", "Not Found");
             }
