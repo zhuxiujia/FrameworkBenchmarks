@@ -141,7 +141,7 @@ fn main() {
     println!("Starting http server: 127.0.0.1:8080");
     let server = HttpServer {
         db_pool: PgConnectionPool::new(
-            "postgres://benchmarkdbuser:benchmarkdbpass@tfb-database:5432/hello_world",
+            "postgres://benchmarkdbuser:benchmarkdbpass@tfb-database/hello_world",
             num_cpus::get(),
         ),
     };
