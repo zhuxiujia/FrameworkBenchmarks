@@ -132,6 +132,7 @@ impl HttpService for Techempower {
                 world.to_bytes_mut(rsp.body_mut())
 
 
+                //TODO
                 // rsp.header("Content-Type: application/json");
                 // let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
                 // let world = self.db.get_world(random_id).unwrap();
@@ -152,7 +153,7 @@ impl HttpService for Techempower {
                 ywrite_html!(body, "{{> fortune }}");
                 rsp.body_vec(body);
 
-
+                //TODO
                 // let fortunes = self.db.tell_fortune().unwrap();
                 // let mut body = Vec::with_capacity(2048);
                 // ywrite_html!(body, "{{> fortune }}");
@@ -171,7 +172,7 @@ impl HttpService for Techempower {
                     vec
                 };
                 worlds.to_bytes_mut(rsp.body_mut());
-
+                //TODO
                 // let q = utils::get_query_param(p) as usize;
                 // let worlds = self.db.get_worlds(q, &mut self.rng).unwrap();
                 // worlds.to_bytes_mut(rsp.body_mut());
@@ -189,7 +190,7 @@ impl HttpService for Techempower {
                 };
                 worlds.to_bytes_mut(rsp.body_mut());
 
-
+                //TODO
                 // let q = utils::get_query_param(p) as usize;
                 // let worlds = self.db.updates(q, &mut self.rng).unwrap();
                 // worlds.to_bytes_mut(rsp.body_mut());
