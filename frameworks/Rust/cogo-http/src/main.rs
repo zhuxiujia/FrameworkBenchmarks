@@ -2,8 +2,8 @@
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
 
-#[macro_use]
-extern crate cdbc;
+// #[macro_use]
+// extern crate cdbc;
 
 use std::borrow::Cow;
 use std::fmt::Write;
@@ -11,8 +11,8 @@ use std::io;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
-use cdbc::{Executor, PoolConnection};
-use cdbc_pg::{PgConnection, PgPool, PgPoolOptions, Postgres};
+// use cdbc::{Executor, PoolConnection};
+// use cdbc_pg::{PgConnection, PgPool, PgPoolOptions, Postgres};
 
 use cogo::std::http::server::{HttpService, HttpServiceFactory, Request, Response};
 
@@ -38,36 +38,36 @@ pub struct Fortune {
     message: Cow<'static, str>,
 }
 
-struct PgConnectionPool {
-    idx: AtomicUsize,
-    clients: Vec<Arc<PoolConnection<Postgres>>>,
-}
-
-impl PgConnectionPool {
-    fn new(db_url: &str, size: usize) -> PgConnectionPool {
-        let mut opt =PgPoolOptions::new();
-        opt.max_connections = size as u32;
-        opt.min_connections = size as u32;
-        let pool=Arc::new(opt.connect(db_url).unwrap());
-
-        let mut clients = Vec::with_capacity(size);
-        for _ in 0..size {
-            let client = pool.acquire().unwrap();
-            clients.push(Arc::new(client));
-        }
-
-        PgConnectionPool {
-            idx: AtomicUsize::new(0),
-            clients,
-        }
-    }
-
-    fn get_connection(&self) -> (Arc<PoolConnection<Postgres>>, usize) {
-        let idx = self.idx.fetch_add(1, Ordering::Relaxed);
-        let len = self.clients.len();
-        (self.clients[idx % len].clone(), idx)
-    }
-}
+// struct PgConnectionPool {
+//     idx: AtomicUsize,
+//     clients: Vec<Arc<PoolConnection<Postgres>>>,
+// }
+//
+// impl PgConnectionPool {
+//     fn new(db_url: &str, size: usize) -> PgConnectionPool {
+//         let mut opt =PgPoolOptions::new();
+//         opt.max_connections = size as u32;
+//         opt.min_connections = size as u32;
+//         let pool=Arc::new(opt.connect(db_url).unwrap());
+//
+//         let mut clients = Vec::with_capacity(size);
+//         for _ in 0..size {
+//             let client = pool.acquire().unwrap();
+//             clients.push(Arc::new(client));
+//         }
+//
+//         PgConnectionPool {
+//             idx: AtomicUsize::new(0),
+//             clients,
+//         }
+//     }
+//
+//     fn get_connection(&self) -> (Arc<PoolConnection<Postgres>>, usize) {
+//         let idx = self.idx.fetch_add(1, Ordering::Relaxed);
+//         let len = self.clients.len();
+//         (self.clients[idx % len].clone(), idx)
+//     }
+// }
 
 
 
@@ -78,27 +78,27 @@ struct Techempower {
 }
 
 
-fn get_world(conn: &mut PoolConnection<Postgres>, random_id: i32) -> Result<WorldRow, cdbc::Error> {
-    let mut q=cdbc::query::query("SELECT * FROM world WHERE id=$1")
-        .bind(random_id);
-    let all=conn.fetch_one(q)?;
-    let row=cdbc::row_scan!(all,WorldRow{ id: 0, randomnumber: 0 })?;
-    Ok(row)
-}
-
-fn get_worlds(
-    conn: &mut PoolConnection<Postgres>,
-    num: usize,
-    rand: &mut Rand32,
-) -> Result<Vec<WorldRow>, cdbc::Error> {
-    let mut queries = vec![];
-    for _ in 0..num {
-        let random_id = (rand.rand_u32() % 10_000 + 1) as i32;
-        let row=get_world(conn,random_id)?;
-        queries.push(row);
-    }
-    Ok(queries)
-}
+// fn get_world(conn: &mut PoolConnection<Postgres>, random_id: i32) -> Result<WorldRow, cdbc::Error> {
+//     let mut q=cdbc::query::query("SELECT * FROM world WHERE id=$1")
+//         .bind(random_id);
+//     let all=conn.fetch_one(q)?;
+//     let row=cdbc::row_scan!(all,WorldRow{ id: 0, randomnumber: 0 })?;
+//     Ok(row)
+// }
+//
+// fn get_worlds(
+//     conn: &mut PoolConnection<Postgres>,
+//     num: usize,
+//     rand: &mut Rand32,
+// ) -> Result<Vec<WorldRow>, cdbc::Error> {
+//     let mut queries = vec![];
+//     for _ in 0..num {
+//         let random_id = (rand.rand_u32() % 10_000 + 1) as i32;
+//         let row=get_world(conn,random_id)?;
+//         queries.push(row);
+//     }
+//     Ok(queries)
+// }
 
 
 
@@ -123,7 +123,7 @@ impl HttpService for Techempower {
                 rsp.header("Content-Type: application/json");
 
                 let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
-                let world = {cogo::coroutine::sleep(Duration::from_millis(2));
+                let world = {
                  WorldRow{
                     id: random_id,
                     randomnumber: random_id
@@ -141,7 +141,6 @@ impl HttpService for Techempower {
                 rsp.header("Content-Type: text/html; charset=utf-8");
                 let fortunes = {
                     let mut v=vec![];
-                    cogo::coroutine::sleep(Duration::from_millis(2));
                     let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
                     v.push(Fortune{
                         id: random_id,
@@ -164,7 +163,6 @@ impl HttpService for Techempower {
 
                 let worlds = {
                     let mut vec:SmallVec<[WorldRow;1]> =SmallVec::new();
-                    cogo::coroutine::sleep(Duration::from_millis(2));
                     let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
                     vec.push(WorldRow{
                         id: random_id,
@@ -182,7 +180,6 @@ impl HttpService for Techempower {
                 rsp.header("Content-Type: application/json");
                 let worlds = {
                     let mut vec:SmallVec<[WorldRow;1]> =SmallVec::new();
-                    cogo::coroutine::sleep(Duration::from_millis(2));
                     let random_id = (self.rng.rand_u32() % 10_000 + 1) as i32;
                     vec.push(WorldRow{
                         id: random_id,
