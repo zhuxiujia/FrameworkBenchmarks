@@ -52,7 +52,12 @@ fn main() {
     route.handle_fn("/json",|req: Request, rsp: Response| {
         rsp.headers.set_raw("Content-Type",vec![b"application/json".to_vec()]);
         rsp.headers.set_raw("Server",vec![b"cogo".to_vec()]);
-        rsp.send("Hello, World!".as_bytes());
+        let msg = HeloMessage {
+            message: "Hello, World!",
+        };
+        let mut buf =vec![];
+        msg.to_bytes_mut(&mut buf);
+        rsp.send(&buf);
     });
     route.handle_fn("/plaintext",|req: Request, rsp: Response| {
       rsp.headers.set_raw("Content-Type",vec![b"text/plain".to_vec()]);
