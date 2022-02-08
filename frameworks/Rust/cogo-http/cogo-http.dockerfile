@@ -1,5 +1,4 @@
 FROM rust:1.57.0
-
 RUN apt-get update -yqq && apt-get install -yqq cmake g++
 
 ADD ./ /cogo
@@ -10,4 +9,7 @@ RUN RUSTFLAGS="-C target-cpu=native" cargo build --release
 
 EXPOSE 8080
 
-CMD ./target/release/cogo-http
+CMD ./target/release/cogo-http-techempower
+
+ENV http_proxy ""
+ENV https_proxy ""
