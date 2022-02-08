@@ -6,7 +6,7 @@ edition = "2018"
 
 
 [dependencies]
-cogo = {git="https://github.com/co-rs/cogo.git",branch = "main"}
+cogo = "0.1"
 cogo-http = {version = "0.1"}
 mimalloc = "0.1"
 num_cpus = "1.0"
