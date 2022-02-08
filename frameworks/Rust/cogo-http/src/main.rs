@@ -51,9 +51,11 @@ fn main() {
 
     route.handle_fn("/json",|req: Request, rsp: Response| {
         rsp.headers.set_raw("Content-Type",vec![b"application/json".to_vec()]);
+        rsp.headers.set_raw("Server",vec![b"cogo".to_vec()]);
         rsp.send("Hello, World!".as_bytes());
     });
     route.handle_fn("/plaintext",|req: Request, rsp: Response| {
+      rsp.headers.set_raw("Server",vec![b"cogo".to_vec()]);
       rsp.send("Hello, World!".as_bytes());
     });
     route.handle_fn("/db",|req: Request, rsp: Response| {
