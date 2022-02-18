@@ -22,8 +22,8 @@ use oorandom::Rand32;
 use smallvec::SmallVec;
 use yarte::{ywrite_html, Serialize};
 
-use cogo_http::route::Route;
-use cogo_http::server::{Request, Response};
+use mco_http::route::Route;
+use mco_http::server::{Request, Response};
 
 #[derive(Serialize)]
 struct HeloMessage {
@@ -44,14 +44,14 @@ pub struct Fortune {
 
 
 fn main() {
-    cogo::config()
+    mco::config()
         .set_pool_capacity(10000)
         .set_stack_size(0x1000);
     let mut route = Route::new();
 
     route.handle_fn("/json",|req: Request, rsp: Response| {
         rsp.headers.set_raw("Content-Type",vec![b"application/json".to_vec()]);
-        rsp.headers.set_raw("Server",vec![b"cogo".to_vec()]);
+        rsp.headers.set_raw("Server",vec![b"mco".to_vec()]);
         let msg = HeloMessage {
             message: "Hello, World!",
         };
@@ -61,7 +61,7 @@ fn main() {
     });
     route.handle_fn("/plaintext",|req: Request, rsp: Response| {
       rsp.headers.set_raw("Content-Type",vec![b"text/plain".to_vec()]);
-      rsp.headers.set_raw("Server",vec![b"cogo".to_vec()]);
+      rsp.headers.set_raw("Server",vec![b"mco".to_vec()]);
       rsp.send("Hello, World!".as_bytes());
     });
     route.handle_fn("/db",|req: Request, rsp: Response| {
@@ -127,7 +127,7 @@ fn main() {
         rsp.send(&buf);
     });
     let route = Arc::new(route);
-    let _listening = cogo_http::Server::http("0.0.0.0:8080").unwrap()
+    let _listening = mco_http::Server::http("0.0.0.0:8080").unwrap()
         .handle_stack(route.clone(),0x1000);
     println!("Starting http server: 127.0.0.1:8080");
 }
